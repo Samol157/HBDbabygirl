@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Birthday Surprise</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --pink:#ffe6f0;
+      --soft-pink:#ffd9e8;
+      --sky:#a1c9ff;
+      --lav:#efe6ff;
+      --rose:#ff6b8a;
+      --glass: rgba(255,255,255,0.06);
+      --duration: 800ms;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Roboto, system-ui, -apple-system, 'Segoe UI', sans-serif;background:#000}
+    .stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 1s ease, transform 1s ease;opacity:0;pointer-events:none}
+    .scene.active{opacity:1;pointer-events:auto}
+
+    .intro{background: radial-gradient(circle at 30% 20%, #fff4f8 0%, var(--pink) 30%, var(--soft-pink) 100%);}
+    .circle{width:260px;height:260px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6));box-shadow:0 12px 40px rgba(255,182,203,0.35), inset 0 6px 18px rgba(255,255,255,0.7);transform:translateY(-10px)}
+    video{width:70%;height:70%;object-fit:cover;border-radius:50%;}
+    .title{margin-top:28px;font-size:36px;letter-spacing:3px;color:#e59ead;text-shadow:0 6px 18px rgba(255,100,150,0.18);opacity:0;transform:translateY(12px);animation:fadeBounce 1s ease 0.4s forwards}
+    @keyframes fadeBounce{to{opacity:1;transform:translateY(0)} }
+
+    .dark{background:#000;color:#dff0ff}
+    .blue-bar{padding:18px 26px;border-radius:10px;background:linear-gradient(90deg,#0f4bff22,#7fb6ff22);border:1px solid rgba(121,168,255,0.18);box-shadow:0 6px 30px rgba(161,201,255,0.12), 0 0 36px rgba(161,201,255,0.06) inset;backdrop-filter:blur(6px)}
+    .blue-bar h2{margin:0;font-family:'Dancing Script', cursive;font-size:28px;color:#dff6ff}
+    .blue-sub{margin-top:10px;font-size:14px;opacity:0.9}
+    .light-button{margin-top:22px;padding:10px 18px;border-radius:8px;background:#0c6bff;color:white;border:none;cursor:pointer;box-shadow:0 8px 30px rgba(12,107,255,0.14)}
+    .glow-sheet{position:absolute;inset:0;background:linear-gradient(180deg, rgba(161,201,255,0.25), rgba(255,255,255,0.02));transform:translateY(-120%);transition:transform 1600ms cubic-bezier(.22,.9,.34,1);pointer-events:none}
+    .glow-sheet.down{transform:translateY(0)}
+
+    .lightup{background:linear-gradient(180deg,#ffffff 0%, #fff8fb 100%);color:#222;padding:40px}
+    .lightup .message{font-family:'Great Vibes', cursive;font-size:40px;max-width:900px;text-align:center;color:#7a5b6b;opacity:0;transform:translateY(12px);animation:fadeIn 900ms ease 200ms forwards}
+    @keyframes fadeIn{to{opacity:1;transform:none}}
+
+    .cake-scene{background:linear-gradient(180deg,#ffffff,#fffdf9);}
+    .cake{width:320px;height:240px;background-size:contain;background-position:center;background-repeat:no-repeat;border-radius:18px;box-shadow:0 14px 40px rgba(255,100,150,0.06)}
+    .confetti{position:absolute;inset:0;pointer-events:none}
+    .pink-btn{margin-top:28px;padding:12px 18px;border-radius:30px;background:linear-gradient(90deg,var(--pink),#ffdfef);border:none;cursor:pointer;font-weight:700;box-shadow:0 12px 40px rgba(255,105,145,0.12), 0 0 30px rgba(255,200,220,0.08);}
+
+    .slice-scene{background:linear-gradient(180deg,#fff6fb,#fff7f9)}
+    .romantic{display:flex;flex-direction:column;align-items:center}
+    .romantic img{width:140px;height:140px;border-radius:12px;object-fit:cover;box-shadow:0 12px 26px rgba(255,120,140,0.08)}
+    .cursive{font-family:'Dancing Script', cursive;font-size:36px;color:#b94b6b;margin-top:16px}
+
+    .hearts{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+    .heart{position:absolute;width:18px;height:18px;background:radial-gradient(circle at 30% 30%,#fff 0%,#ff6b8a 20%);transform:rotate(45deg);border-radius:4px 4px 0 0;opacity:0;}
+
+    .main-msg{background:linear-gradient(180deg,#fffdfb,#fffefc);padding:40px;align-items:center}
+    .us-video{width:280px;height:280px;border-radius:18px;object-fit:cover;box-shadow:0 18px 50px rgba(200,150,170,0.08);}
+    .letter{max-width:760px;height:220px;overflow:auto;background:linear-gradient(180deg,rgba(255,255,255,0.6),rgba(255,255,255,0.9));padding:18px;border-radius:12px;margin-top:18px;border:1px solid rgba(200,180,190,0.6)}
+    .letter p{font-family:'fredoka',sans-serif ;font-size:18px;color:#130e0f ;line-height:1.6;margin:8px 0}
+    .choice-bar{margin-top:18px;opacity:0;transform:translateY(8px);transition:all 400ms;display:flex;gap:12px;flex-direction:column;align-items:center;}
+    .choice-bar.visible{opacity:1;transform:none}
+    .choice{padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,#fff,#ffeaf0);border:1px solid rgba(200,160,180,0.2);cursor:pointer}
+
+    .video-scene{background:linear-gradient(180deg,#0e0b10 0%, rgba(0,0,0,0.92) 40%);display:flex;flex-direction:column}
+    .spot{position:relative;width:min(840px,92%);height:auto;padding:28px;border-radius:20px;background:linear-gradient(180deg,#fff0f8, #fff0f6);box-shadow:0 30px 80px rgba(120,40,80,0.18);}
+    .video-wrap{border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.45);}
+ 
+    #surpriseVid{
+      width:720px;
+      height:1280px;
+      max-width:100%;
+      object-fit:cover;
+      display:block;
+      margin:auto;
+      border-radius:12px;
+    }
+    .final-msg{margin-top:18px;text-align:center;color:#ffe6f0;font-family:'Great Vibes',cursive;font-size:28px;opacity:0;transition:opacity 700ms}
+    .final-msg.show{opacity:1}
+
+    @media (max-width:720px){
+      .title{font-size:26px}
+      .circle{width:200px;height:200px}
+      .us-video{width:200px;height:200px}
+      .letter{height:200px}
+      #surpriseVid{width:100%;height:auto;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="stage">
+
+    <section class="scene intro active" id="scene-0" aria-hidden="false">
+      <div class="circle">
+      
+        <video autoplay muted loop playsinline>
+          <source src="kitty.mp4" type="video/mp4">
+        
+        </video>
+      </div>
+      <div class="title">HAPPY BIRTHDAY BABY</div>
+    </section>
+
+  
+    <section class="scene dark" id="scene-1" aria-hidden="true">
+      <div class="blue-bar">
+        <h2>Light up the room with a wish.</h2>
+        <div class="blue-sub">Click the button below to illuminate the room.</div>
+        <button class="light-button" id="lightBtn">Light Up ✨</button>
+      </div>
+      <div class="glow-sheet" id="glow"></div>
+    </section>
+
+    <section class="scene lightup" id="scene-2" aria-hidden="true">
+      <div class="message">Happy Birthday, my love — you brighten my days more than any light ever could.</div>
+    </section>
+
+    <section class="scene cake-scene" id="scene-3" aria-hidden="true">
+      <div class="cake" id="cake" style="background-image:url('cake.jpg')" aria-hidden="true"></div>
+      <button class="pink-btn" id="cutBtn">Let’s cut the cake together 🎂</button>
+      <canvas class="confetti" id="confettiCanvas"></canvas>
+    </section>
+
+    <section class="scene slice-scene" id="scene-4" aria-hidden="true">
+      <div class="romantic">
+        <img src="slice.jpg" alt="cake slice" />
+        <div class="cursive">Yours &lt;baki mera&gt;</div>
+      </div>
+      <div class="hearts" id="hearts"></div>
+    </section>
+
+    <section class="scene main-msg" id="scene-5" aria-hidden="true">
+      <video class="us-video" autoplay muted loop playsinline>
+        <source src="us.mp4" type="video/mp4">
+      </video>
+
+      <div class="letter" id="letter">
+        
+        <p>It's finally your 18th birthday and I'm super,super happy! My baby is 18 now 🎉😘 
+          I don't even know where to begin because words will never be enough to explain how much I loooovwvwveeeee youuuuuuuuu ❤️😘
+          Like literally, every cell in my body loves you and the way I'm addicted to you 
+          i don't even know how to survive without you a single day. You have no idea what you mean to me  you're my favorite thought, 
+          my safest space, my biggest blessing. Every time I think about how we met - that unexpected moment, that random conversation -
+           I just smile and thank the universe a hundred times. And you didn't just enter my world , you became my whole world😭😭🫶🏻 </p>
+
+        <p> You made me laugh like a kid again, made me believe in love again, made me feel seen. Main khush rehne lagi hu, mere paas koi hai 
+          jisko main har baat bata sakti hu, jiske sath gossip kar sakti hu, jiske samne main apna har mood show kar sakti hu -
+           bina kisi dar ke. You are my love, my home, my saheli, my rasgulla, my baby, my darling, my sona, my chamach, my bhagona😂 </p>
+
+           <p> You always say, "You are my precious." But for me You're my everything you're exactly like this lyrics
+             "Jitt loon zamane se main jung karke, tujhe pe duppatte wala rang karke..." 
+             That's what you mean to me - someone I'd fight the whole world for, someone I'd choose over and over again no matter what.
+              And yes, jealousy toh meri peak pe hoti hi hai jab baat aapki ho - because you're mine, aur sirf mere ho </p>
+
+              <p> It's been almost 5 months with you now, and honestly, every single second feels special with you. From that innocent "hi hello" to 
+                "bina baat kiye reh na pana" our journey has been something I can't even describe in words. It's not something others will 
+                understand because it's ours- perfectly imperfect, beautifully chaotic... All it start with lighting on your degree moments,  
+                then jhadu-chappal to that one unforgettable night when you said 'I love you'... < I still remember it so clearly - my heart was 
+                racing so fast I swear I could hear it aur jo ladki kisi ko 2 mahine me hn na bole vo 2 din me bol di koi vishwas nhi krne
+                 wla.... and after that night changed everything for me > to first call , first vc , every 
+                 month one fixed fight our marab nu moment ek durse ko kasam deke sari baate niklwana to koi mujhse kyu pyar karega ,
+                  nadia , jii.. in bich mere overthinking aapka reassurance mera gussa aapka manana mere nakhre aapka jii madam ji future
+                   bright krne ke liye🌚  Baby you are my peace when the world feels loud, my happiness when I'm upset, my comfort when I'm
+                    scared... You're my everything my person, my blessing, my favorite chapter in this book called life </p>
+
+               <p> You know what? I love you more when- You never give up on us, never walk away even when things get hard. And that's what love is,
+                   It's not about perfection, it's about choosing each other again and again. And that's what we do. Baby i love your voice,
+                  your smile, your eyes your love , the way you call me babu bacha and rani , the way you make even an ordinary day feel special...
+                   You're my reason for so many smiles... chalo ho gya likhne ko main 100 points likh du lekin phir aapke bhav badh jayenge..huh
+                   < majak kr rhu darling sorry> </p>
+
+                   <h2> You are my HOME. I can yell at you, I can love you, I can share everything my feelings, my problems, my insecurities with you.
+                   And the beautiful part is that ik you never judge me. We're lovers, and we're also each other’s friend.
+                   The bond we have is truly precious to me. Things go up and down, but we are never going to be separated.
+                   The vibe we share—the bond we have—can never be changed, forgotten, or replaced by anything or anybody.
+                   So yes, I can get angry, but I can never stay away from my HOME. All I want to say is that I love youuuu.
+                   You’re the best person in my life, and I can never afford losing you. </h2>
+
+                 <p> Ik bohot pareshan krti hu bohot gussa krti hu bohot nakhre bhi hai but baby aapke samne hi hai 😭😭 thoda kam krne ka koshish krungi
+                   and and keep this in your mind no matter what I here with you you will never  gonna face anything alone we will manage everything together... 
+                   okay baby jii?? </p>  
+
+                  <p> Happy birthday, my love❤️🎀 </p>
+                  <p>You deserve the entire world and a little more - every happiness, every success, every dream you've ever wished for. I'm so so proud of who you are, of how
+                  far you've come, of the way you love, care, and make people feel special. You're 18 now officially stepping into a new chapter of your life - and I'll be 
+                  right here, cheering for you, loving you, fighting for you <with you> growing with you, forever muuuuaaaaaaahhhhhhhh💋 </p>
+
+        <p style="height:40px"></p>
+      </div>
+
+      <div class="choice-bar" id="choiceBar">
+        <b style="font-size:18px;color:#b94b6b;font-family:'Dancing Script', cursive;">Do you want to see something more?</b>
+        <div>
+          <button class="choice" id="opt1">Yes</button>
+          <button class="choice" id="opt2">Obviously Yes</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene video-scene" id="scene-6" aria-hidden="true">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column">
+        <div class="spot">
+          <div class="video-wrap">
+            <video id="surpriseVid" controls playsinline>
+              <source src="mine.mp4" type="video/mp4">
+              
+            </video>
+          </div>
+          <div class="final-msg" id="finalMsg">You are my favorite story. Happy Birthday, my forever.</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    const scenes = Array.from(document.querySelectorAll('.scene'));
+    let current = 0;
+
+    function showScene(i){
+      scenes.forEach((s,idx)=>{
+        s.classList.toggle('active', idx===i);
+        s.setAttribute('aria-hidden', idx===i? 'false' : 'true');
+      });
+      current = i;
+    }
+
+    setTimeout(()=>{ showScene(1); }, 3000);
+
+    const lightBtn = document.getElementById('lightBtn');
+    const glow = document.getElementById('glow');
+    lightBtn.addEventListener('click', ()=>{
+      glow.classList.add('down');
+      setTimeout(()=>{ showScene(2); }, 1200);
+    });
+
+    const lightScene = document.getElementById('scene-2');
+    lightScene.addEventListener('transitionend', (e)=>{
+      if(e.propertyName.includes('opacity') && lightScene.classList.contains('active')){
+        setTimeout(()=>{ showScene(3); startConfetti(); }, 4000);
+      }
+    });
+
+    const cutBtn = document.getElementById('cutBtn');
+    cutBtn.addEventListener('click', ()=>{
+      showScene(4);
+      spawnHearts();
+      setTimeout(()=>{ showScene(5); }, 2200);
+    });
+
+    function spawnHearts(){
+      const container = document.getElementById('hearts');
+      for(let i=0;i<12;i++){
+        const h = document.createElement('div');
+        h.className='heart';
+        h.style.left = (10 + Math.random()*80)+'%';
+        h.style.bottom = '-10px';
+        h.style.width = (10+Math.random()*20)+'px';
+        h.style.height = h.style.width;
+        container.appendChild(h);
+        animateHeart(h, i*120);
+      }
+    }
+
+    function animateHeart(el, delay){
+      setTimeout(()=>{
+        el.style.transition = 'transform 3500ms linear, bottom 3500ms linear, opacity 2000ms ease-out';
+        el.style.opacity = 1;
+        el.style.transform = 'rotate(25deg) translateY(-280px)';
+        el.style.bottom = '120%';
+        setTimeout(()=>{
+          el.style.opacity=0;
+          setTimeout(()=>el.remove(),2400);
+        }, 2200);
+      }, delay);
+    }
+
+    const letter = document.getElementById('letter');
+    const choiceBar = document.getElementById('choiceBar');
+    function checkScroll(){
+      const atBottom = letter.scrollTop + letter.clientHeight >= letter.scrollHeight - 6;
+      if(atBottom) choiceBar.classList.add('visible');
+    }
+    letter.addEventListener('scroll', checkScroll);
+    setTimeout(()=>{ if(current===5) choiceBar.classList.add('visible'); }, 12000);
+
+    document.getElementById('opt1').addEventListener('click', ()=>{ launchVideo(); });
+    document.getElementById('opt2').addEventListener('click', ()=>{ launchVideo(); });
+
+    function launchVideo(){
+      showScene(6);
+      const vid = document.getElementById('surpriseVid');
+      vid.play().catch(()=>{});
+      vid.onended = ()=>{
+        document.getElementById('finalMsg').classList.add('show');
+        spawnHearts();
+      }
+    }
+
+    const confCanvas = document.getElementById('confettiCanvas');
+    confCanvas.width = window.innerWidth;
+    confCanvas.height = window.innerHeight;
+    const ctx = confCanvas.getContext('2d');
+    let confetti = [];
+
+    function startConfetti(){
+      for(let i=0;i<120;i++){
+        confetti.push({x:Math.random()*confCanvas.width,y:Math.random()*-confCanvas.height,w:6+Math.random()*8,h:8+Math.random()*10,rot:Math.random()*360,vy:1+Math.random()*3,color:`hsl(${Math.random()*340},80%,65%)`});
+      }
+      requestAnimationFrame(renderConfetti);
+      setTimeout(()=>{
+        confetti=[];
+        ctx.clearRect(0,0,confCanvas.width,confCanvas.height);
+      }, 5000);
+    }
+
+    function renderConfetti(){
+      ctx.clearRect(0,0,confCanvas.width,confCanvas.height);
+      confetti.forEach((c)=>{
+        c.y += c.vy;
+        c.rot += 3;
+        ctx.save();
+        ctx.translate(c.x,c.y);
+        ctx.rotate(c.rot*Math.PI/180);
+        ctx.fillStyle=c.color;
+        ctx.fillRect(-c.w/2,-c.h/2,c.w,c.h);
+        ctx.restore();
+      });
+      if(confetti.length) requestAnimationFrame(renderConfetti);
+    }
+
+    window.addEventListener('resize', ()=>{
+      confCanvas.width = innerWidth;
+      confCanvas.height = innerHeight;
+    });
+
+    lightBtn.addEventListener('keyup', (e)=>{
+      if(e.key==='Enter') lightBtn.click();
+    });
+
+    document.addEventListener('DOMContentLoaded', ()=>{ showScene(0); });
+  </script>
+</body>
+</html>
